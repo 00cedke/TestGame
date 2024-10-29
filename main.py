@@ -10,7 +10,7 @@ WHITE = (255, 255, 255)
 BLUE = (100, 255, 0)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("TRACKU GAME FOR REAL XDDDDD PTDRRR MDRRRRRRR")
+pygame.display.set_caption("JustGame")
 
 player_image = pygame.Surface((50, 50))
 player_image.fill(BLUE)
@@ -26,7 +26,6 @@ player_jump = False
 player_jump_speed = -10
 
 while True:
-    # Gestion des événements
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -58,7 +57,7 @@ while True:
             player_jump = False
 
     screen.fill(WHITE)
-    screen.blit(background_image, (0, 0))  # background LOOOOLLL
+    screen.blit(background_image, (0, 0))
     screen.blit(player_image, (player_x, player_y))
     pygame.display.flip()
 

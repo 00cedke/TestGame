@@ -1,5 +1,10 @@
 import pygame
 import sys
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://localhost:27017/")
+db = client["mygame"]
+players_collection = db["players"]
 
 pygame.init()
 
@@ -11,33 +16,86 @@ BLUE = (0, 232, 155)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("JustGame")
 
-background_image = pygame.image.load("assets/background.jpg").convert()
+font = pygame.font.Font(None, 36)
 
-player_image = pygame.Surface((50, 50))
-player_image.fill(BLUE)
-player_x = SCREEN_WIDTH // 2
-player_y = SCREEN_HEIGHT // 2
-player_speed = 5
+def save_player(username, password):
+    players_collection.insert_one({"username": username, "password": password})
 
-gravity = 1.5  
-player_jump = False
-player_jump_speed = -15 
+def get_player(username, password):
+    return players_collection.find_one({"username": username, "password": password})
 
-platforms = [
-    pygame.Rect(100, 300, 100, 10),
-    pygame.Rect(250, 200, 100, 10),
-    pygame.Rect(400, 250, 100, 10),
-    pygame.Rect(550, 150, 100, 10)
-]
+def render_text(text, position, color=(0, 0, 0)):
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, position)
+
+def get_text_input(prompt):
+    user_text = ""
+    active = True
+    while active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                else:
+                    user_text += event.unicode
+
+        screen.fill(WHITE)
+        render_text(prompt, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 3))
+        render_text(user_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 3 + 50), BLUE)
+        pygame.display.flip()
+    
+    return user_text
+
+def show_login_screen():
+    while True:
+        screen.fill(WHITE)
+        render_text("JustGame - Login", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 4), BLUE)
+        render_text("1. Register", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2))
+        render_text("2. Login", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40))
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    username = get_text_input("Enter new username:")
+                    password = get_text_input("Enter new password:")
+                    if players_collection.find_one({"username": username}):
+                        render_text("Username already exists!", (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 80), (255, 0, 0))
+                        pygame.display.flip()
+                        pygame.time.wait(2000)
+                    else:
+                        save_player(username, password)
+                        render_text("Account created successfully!", (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 80), (0, 255, 0))
+                        pygame.display.flip()
+                        pygame.time.wait(2000)
+                        return username
+                elif event.key == pygame.K_2:
+                    username = get_text_input("Enter username:")
+                    password = get_text_input("Enter password:")
+                    if get_player(username, password):
+                        render_text("Login successful!", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 80), (0, 255, 0))
+                        pygame.display.flip()
+                        pygame.time.wait(2000)
+                        return username
+                    else:
+                        render_text("Incorrect username or password.", (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 80), (255, 0, 0))
+                        pygame.display.flip()
+                        pygame.time.wait(2000)
 
 def show_menu():
     while True:
         screen.fill(WHITE)
-        font = pygame.font.Font(None, 74)
-        text = font.render("JustGame", True, BLUE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 4))
+        title_text = font.render("JustGame", True, BLUE)
+        screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, SCREEN_HEIGHT // 4))
 
-        font = pygame.font.Font(None, 36)
         start_text = font.render("Press ENTER to start", True, (0, 0, 0))
         quit_text = font.render("Press ESC to quit", True, (0, 0, 0))
         screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT // 2))
@@ -56,83 +114,10 @@ def show_menu():
                     pygame.quit()
                     sys.exit()
 
-def show_options_menu():
-    while True:
-        screen.fill(WHITE)
-        font = pygame.font.Font(None, 74)
-        text = font.render("Options", True, BLUE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 4))
+def main_game(username):
+    print(f"Bienvenue dans le jeu, {username}!")
 
-        font = pygame.font.Font(None, 36)
-        resume_text = font.render("Press ENTER to resume", True, (0, 0, 0))
-        quit_text = font.render("Press ESC to quit", True, (0, 0, 0))
-        screen.blit(resume_text, (SCREEN_WIDTH // 2 - resume_text.get_width() // 2, SCREEN_HEIGHT // 2))
-        screen.blit(quit_text, (SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + 40))
-
-        pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    return
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-
-def main_game():
-    global player_x, player_y, player_jump, player_jump_speed
-    player_jump = False
-    player_jump_speed = 0 
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            player_x -= player_speed
-        if keys[pygame.K_RIGHT]:
-            player_x += player_speed
-
-        if keys[pygame.K_SPACE] and not player_jump:
-            player_jump = True
-            player_jump_speed = -15
-
-        if player_jump:
-            player_y += player_jump_speed
-            player_jump_speed += gravity  
-        else:
-            player_y += gravity  
-
-        if player_y >= SCREEN_HEIGHT - player_image.get_height():
-            player_y = SCREEN_HEIGHT - player_image.get_height()
-            player_jump = False 
-
-        player_rect = pygame.Rect(player_x, player_y, 50, 50)
-        for platform in platforms:
-            if player_rect.colliderect(platform) and player_jump_speed >= 0: 
-                player_y = platform.top - player_image.get_height() 
-                player_jump = False 
-                player_jump_speed = 0
-
-        screen.fill(WHITE)
-        screen.blit(background_image, (0, 0))
-        screen.blit(player_image, (player_x, player_y))
-
-        for platform in platforms:
-            pygame.draw.rect(screen, (0, 0, 0), platform)
-
-        pygame.display.flip()
-
-        if keys[pygame.K_ESCAPE]:
-            show_options_menu()
-
-        pygame.time.Clock().tick(60)
-
-show_menu()
-main_game()
+username = show_login_screen()
+if username:
+    show_menu()
+    main_game(username)

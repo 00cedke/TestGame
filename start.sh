@@ -8,7 +8,7 @@ fi
 BLUE='\033[0;34m' # Blue Collor
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Game started..${NC}"
+echo -e "${BLUE}Jeu lancé...${NC}"
 
 # Start python file
 python "$1"

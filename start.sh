@@ -11,6 +11,6 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}Game started..${NC}"
 
 # Start python file
-python3 "$1"
+python "$1"
 
 exit

@@ -19,7 +19,7 @@ player_x = SCREEN_WIDTH // 2
 player_y = SCREEN_HEIGHT // 2
 player_speed = 5
 
-gravity = 1.5 
+gravity = 1.5  
 player_jump = False
 player_jump_speed = -15 
 
@@ -43,7 +43,7 @@ def show_menu():
         screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT // 2))
         screen.blit(quit_text, (SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + 40))
 
-        pygame.display.flip()a
+        pygame.display.flip()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,7 +85,7 @@ def show_options_menu():
 def main_game():
     global player_x, player_y, player_jump, player_jump_speed
     player_jump = False
-    player_jump_speed = 0
+    player_jump_speed = 0 
 
     while True:
         for event in pygame.event.get():
@@ -105,19 +105,19 @@ def main_game():
 
         if player_jump:
             player_y += player_jump_speed
-            player_jump_speed += gravity
+            player_jump_speed += gravity  
         else:
-            player_y += gravity
+            player_y += gravity  
 
         if player_y >= SCREEN_HEIGHT - player_image.get_height():
             player_y = SCREEN_HEIGHT - player_image.get_height()
-            player_jump = False
+            player_jump = False 
 
         player_rect = pygame.Rect(player_x, player_y, 50, 50)
         for platform in platforms:
-            if player_rect.colliderect(platform) and player_jump_speed >= 0:
-                player_y = platform.top - player_image.get_height()
-                player_jump = False
+            if player_rect.colliderect(platform) and player_jump_speed >= 0: 
+                player_y = platform.top - player_image.get_height() 
+                player_jump = False 
                 player_jump_speed = 0
 
         screen.fill(WHITE)

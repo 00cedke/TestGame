@@ -5,4 +5,12 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+BLUE='\033[0;34m' # Blue Collor
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}Jeu lancé...${NC}"
+
+# Start python file
 python3 "$1"
+
+exit
